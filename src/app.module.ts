@@ -4,6 +4,7 @@ import { AuthModule } from './modules/auth/auth.module';
 import { User } from './modules/user/entities/user.entity';
 import { UserModule } from './modules/user/user.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { FoodModule } from './modules/food/food.module';
 
 @Module({
   imports: [
@@ -35,7 +36,8 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
       inject: [ConfigService]
     }),
     UserModule,
-    AuthModule
+    AuthModule,
+    FoodModule
   ]
 })
 export class AppModule {}

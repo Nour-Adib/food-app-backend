@@ -23,9 +23,9 @@ export class FoodController {
   constructor(private foodService: FoodService) {}
 
   @UseGuards(JwtAuthGuard)
-  @UseInterceptors(CacheInterceptor)
+  //@UseInterceptors(CacheInterceptor)
   //Cache for 3 horus
-  @CacheTTL(10800)
+  //@CacheTTL(10800)
   @Get('feed')
   async getFeed(@Request() req) {
     return this.foodService

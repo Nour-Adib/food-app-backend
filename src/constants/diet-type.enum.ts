@@ -9,5 +9,6 @@ export enum DietType {
   PALEO = 'paleo',
   PRIMAL = 'primal',
   WHOLE30 = 'whole30',
-  LOW_FODMAP = 'low FODMAP'
+  LOW_FODMAP = 'low FODMAP',
+  NONE = 'none'
 }

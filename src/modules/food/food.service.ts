@@ -8,14 +8,12 @@ import { SearchResponse } from './dto/search-response.dto';
 import { PageOptionsDto } from 'src/common/dto/page-options.dto';
 import { PageDto } from 'src/common/dto/page.dto';
 import { PageMetaDto } from 'src/common/dto/page-meta.dto';
-import { format } from 'path';
-import { log } from 'console';
 import { RecipeResponse } from './dto/recipe-response.dto';
 import { SimplifiedRecipeResponse } from './dto/simplified-recipe-response.dto';
 import { User } from '../user/entities/user.entity';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
 import { UserService } from '../user/user.service';
+import { DietType } from 'src/constants/diet-type.enum';
+import { Intolerance } from 'src/constants/Intolerance.enum';
 dotenv.config();
 
 @Injectable()
@@ -31,20 +29,25 @@ export class FoodService {
 
     const { diet, intolerances } = await this.userService.getUserPreferences(user.id);
 
+    const params = {
+      apiKey: this.apiKey,
+      type: mealType,
+      instructionsRequired: true,
+      addRecipeInformation: true,
+      addRecipeNutrition: true,
+      diet: diet,
+      intolerances: intolerances,
+      sort: sortOption,
+      number: 10,
+      offset: this.getRandomNumber(0, 10)
+    };
+
+    intolerances == Intolerance.NONE ? delete params.intolerances : null;
+    diet == DietType.NONE ? delete params.diet : null;
+
     const config = {
       method: 'get',
-      params: {
-        apiKey: this.apiKey,
-        type: mealType,
-        instructionsRequired: true,
-        addRecipeInformation: true,
-        addRecipeNutrition: true,
-        diet: diet,
-        intolerances: intolerances,
-        sortOption: sortOption,
-        number: 10,
-        offset: this.getRandomNumber(0, 800)
-      },
+      params: params,
       url: `${this.baseUrl}/recipes/complexSearch`
     };
 
@@ -67,18 +70,27 @@ export class FoodService {
     const sortOption = 'healthiness';
     const mealType = this.getMealType();
 
+    const { diet, intolerances } = await this.userService.getUserPreferences(user.id);
+
+    const params = {
+      apiKey: this.apiKey,
+      type: mealType,
+      instructionsRequired: true,
+      addRecipeInformation: true,
+      addRecipeNutrition: true,
+      diet: diet,
+      intolerances: intolerances,
+      sort: sortOption,
+      number: 10,
+      offset: pageOptionsDto.page * pageOptionsDto.skip
+    };
+
+    intolerances == Intolerance.NONE ? delete params.intolerances : null;
+    diet == DietType.NONE ? delete params.diet : null;
+
     const config = {
       method: 'get',
-      params: {
-        apiKey: this.apiKey,
-        type: mealType,
-        instructionsRequired: true,
-        addRecipeInformation: true,
-        addRecipeNutrition: true,
-        sortOption: sortOption,
-        number: 10,
-        offset: pageOptionsDto.page * pageOptionsDto.skip
-      },
+      params: params,
       url: `${this.baseUrl}/recipes/complexSearch`
     };
 

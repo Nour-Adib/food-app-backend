@@ -10,5 +10,6 @@ export enum Intolerance {
   SOY = 'soy',
   SULFITE = 'sulfite',
   TREE_NUT = 'tree nut',
-  WHEAT = 'wheat'
+  WHEAT = 'wheat',
+  NONE = 'none'
 }

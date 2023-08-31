@@ -15,7 +15,6 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { Response } from 'express';
 import { FoodService } from './food.service';
 import { CacheInterceptor, CacheTTL } from '@nestjs/cache-manager';
-import { log } from 'console';
 import { SearchRequest } from './dto/search-request.dto';
 import { PageOptionsDto } from 'src/common/dto/page-options.dto';
 
@@ -30,12 +29,29 @@ export class FoodController {
   @Get('feed')
   async getFeed(@Request() req) {
     return this.foodService
-      .getFeed()
+      .getFeed(req.user.id)
       .then((feed) => {
         return feed;
       })
       .catch((err) => {
         return { message: err.message };
+      });
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get('paginated-feed')
+  async getPaginatedFeed(
+    @Request() req,
+    @Res() res: Response,
+    @Query() pageOptionsDto: PageOptionsDto
+  ) {
+    return this.foodService
+      .getPaginatedFeed(req.user.id, pageOptionsDto)
+      .then((response) => {
+        return res.status(HttpStatus.OK).send(response);
+      })
+      .catch((err) => {
+        return res.status(err.status).json({ message: err.message });
       });
   }
 

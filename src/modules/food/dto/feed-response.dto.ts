@@ -2,7 +2,7 @@ export interface FeedResponse {
   recipes: Dish[];
 }
 
-interface Dish {
+export interface Dish {
   vegetarian: boolean;
   vegan: boolean;
   glutenFree: boolean;

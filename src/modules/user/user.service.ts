@@ -3,6 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, UpdateResult } from 'typeorm';
 import { User } from './entities/user.entity';
 import { SignUpUserDto } from '../auth/dto/user-signup.dto';
+import { Preferences } from './dto/preferences.dto';
 
 @Injectable()
 export class UserService {
@@ -58,5 +59,33 @@ export class UserService {
 
   getUserById(id: string): Promise<User> {
     return this.usersRepository.findOneBy({ id: id });
+  }
+
+  getUserProfile(user: User): Promise<User> {
+    return this.usersRepository.findOneBy({ id: user.id });
+  }
+
+  updatePreferences(user: User, preferences: Preferences): Promise<User> {
+    const { diet, intolerances, separator } = preferences;
+
+    user.diet = this.formatDiet(diet, separator);
+    user.intolerances = this.formatIntolerances(intolerances);
+
+    return this.usersRepository.save(user);
+  }
+
+  formatDiet(diet: string[], separator: string): string {
+    return diet.join(separator);
+  }
+
+  formatIntolerances(intolerances: string[]): string {
+    return intolerances.join(',');
+  }
+
+  async getUserPreferences(id: string): Promise<{ diet: string; intolerances: string }> {
+    const user = await this.getUserById(id);
+    const { diet, intolerances } = user;
+
+    return { diet, intolerances };
   }
 }

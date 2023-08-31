@@ -21,7 +21,7 @@ import { FoodModule } from './modules/food/food.module';
         password: configService.get<string>('DATABASE_PASSWORD'),
         database: configService.get<string>('DATABASE_NAME'),
         entities: [User],
-        synchronize: false,
+        synchronize: true,
         autoLoadEntities: true,
         options: { encrypt: false },
         //*Migrations Settings

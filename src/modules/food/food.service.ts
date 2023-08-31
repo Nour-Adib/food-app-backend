@@ -2,7 +2,7 @@ import { HttpService } from '@nestjs/axios';
 import { Injectable } from '@nestjs/common';
 import * as dotenv from 'dotenv';
 import { SearchRecipesRequest } from './dto/search-recipes-request.dto';
-import { FeedResponse } from './dto/feed-response.dto';
+import { Dish, FeedResponse } from './dto/feed-response.dto';
 import { SearchRequest } from './dto/search-request.dto';
 import { SearchResponse } from './dto/search-response.dto';
 import { PageOptionsDto } from 'src/common/dto/page-options.dto';
@@ -12,18 +12,24 @@ import { format } from 'path';
 import { log } from 'console';
 import { RecipeResponse } from './dto/recipe-response.dto';
 import { SimplifiedRecipeResponse } from './dto/simplified-recipe-response.dto';
+import { User } from '../user/entities/user.entity';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { UserService } from '../user/user.service';
 dotenv.config();
 
 @Injectable()
 export class FoodService {
-  constructor(private httpService: HttpService) {}
+  constructor(private httpService: HttpService, private userService: UserService) {}
 
   baseUrl = 'https://api.spoonacular.com';
   apiKey = process.env?.SPOONACULAR_API_KEY;
 
-  async getFeed(): Promise<FeedResponse> {
+  async getFeed(user: User): Promise<FeedResponse> {
     const sortOption = 'healthiness';
     const mealType = this.getMealType();
+
+    const { diet, intolerances } = await this.userService.getUserPreferences(user.id);
 
     const config = {
       method: 'get',
@@ -33,8 +39,11 @@ export class FoodService {
         instructionsRequired: true,
         addRecipeInformation: true,
         addRecipeNutrition: true,
+        diet: diet,
+        intolerances: intolerances,
         sortOption: sortOption,
-        number: 10
+        number: 10,
+        offset: this.getRandomNumber(0, 800)
       },
       url: `${this.baseUrl}/recipes/complexSearch`
     };
@@ -49,7 +58,49 @@ export class FoodService {
         return {};
       });
 
+    console.log(response);
+
     return this.transformIntoFeedResponse(response);
+  }
+
+  async getPaginatedFeed(user: User, pageOptionsDto: PageOptionsDto): Promise<PageDto<Dish>> {
+    const sortOption = 'healthiness';
+    const mealType = this.getMealType();
+
+    const config = {
+      method: 'get',
+      params: {
+        apiKey: this.apiKey,
+        type: mealType,
+        instructionsRequired: true,
+        addRecipeInformation: true,
+        addRecipeNutrition: true,
+        sortOption: sortOption,
+        number: 10,
+        offset: pageOptionsDto.page * pageOptionsDto.skip
+      },
+      url: `${this.baseUrl}/recipes/complexSearch`
+    };
+
+    const response: SearchRecipesRequest = await this.httpService
+      .axiosRef(config)
+      .then(function (response) {
+        return response.data;
+      })
+      .catch(function (error) {
+        console.log(error);
+        return {};
+      });
+
+    const feedResponse = this.transformIntoFeedResponse(response);
+
+    const itemCount: number = feedResponse.recipes.length < 10 ? feedResponse.recipes.length : 100;
+
+    const entities: Dish[] = feedResponse.recipes;
+
+    const pageMetaDto: PageMetaDto = new PageMetaDto({ itemCount, pageOptionsDto });
+
+    return new PageDto(entities, pageMetaDto);
   }
 
   getMealType(): string {
@@ -214,5 +265,9 @@ export class FoodService {
     };
 
     return simplifiedRecipeResponse;
+  }
+
+  getRandomNumber(min: number, max: number): number {
+    return Math.floor(Math.random() * (max - min + 1)) + min;
   }
 }

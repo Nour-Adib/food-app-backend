@@ -1,23 +1,5 @@
-import {
-  Controller,
-  UseGuards,
-  Res,
-  Request,
-  Get,
-  HttpStatus,
-  Patch,
-  BadRequestException,
-  Post
-} from '@nestjs/common';
-import {
-  Body,
-  Delete,
-  Param,
-  Put,
-  Query,
-  UploadedFile,
-  UseInterceptors
-} from '@nestjs/common/decorators';
+import { Controller, UseGuards, Res, Request, Get, HttpStatus } from '@nestjs/common';
+import { Body, Put } from '@nestjs/common/decorators';
 import { Response } from 'express';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { UserService } from './user.service';

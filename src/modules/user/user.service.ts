@@ -70,6 +70,7 @@ export class UserService {
 
     user.diet = this.formatDiet(diet, separator);
     user.intolerances = this.formatIntolerances(intolerances);
+    user.separator = separator;
 
     return this.usersRepository.save(user);
   }
